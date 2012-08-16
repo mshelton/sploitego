@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from os import execvp, geteuid, name
+from os import execvp, geteuid, name, path
 from traceback import format_exc
 from argparse import ArgumentParser
 from sploitego.commands.common import cmd_name, import_transform
@@ -68,7 +68,11 @@ def run(args):
     try:
         m = import_transform(transform)
 
-        if name == 'posix' and hasattr(m.dotransform, 'privileged') and geteuid():
+        if path.exists("/usr/bin/gksudo") and hasattr(m.dotransform, 'privileged') and geteuid():
+            execvp('/usr/bin/gksudo', ['/usr/bin/gksudo'] + list(sys.argv))
+            sys.exit(-1)
+
+        elif name == 'posix' and hasattr(m.dotransform, 'privileged') and geteuid():
             execvp('pysudo', ['pysudo'] + list(sys.argv))
             sys.exit(-1)
 
